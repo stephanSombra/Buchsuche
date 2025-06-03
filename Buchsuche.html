@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang="de"><head>  <meta charset="UTF-8">  <title>Büchersuche (Online)</title>  <link rel="stylesheet" href="stylebuch.css"></head><body>
+  <h1>Online-Büchersuche</h1>
+  <input type="text" id="suchfeld" placeholder="Autor oder Titel..." onkeyup="sucheOnline()">
+  <ul id="buecherListe"></ul>
+  <script>    async function sucheOnline() {      const eingabe = document.getElementById("suchfeld").value;      const ergebnisListe = document.getElementById("buecherListe");
+      if (eingabe.length < 3) {        ergebnisListe.innerHTML = ""; // Nur suchen, wenn mind. 3 Zeichen        return;      }
+      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(eingabe)}`;      const antwort = await fetch(url);      const daten = await antwort.json();
+      ergebnisListe.innerHTML = "";
+      daten.docs.slice(0, 10).forEach(buch => {        const autor = buch.author_name ? buch.author_name.join(", ") : "Unbekannter Autor";        const titel = buch.title || "Ohne Titel";
+        const li = document.createElement("li");        li.textContent = `${autor} – ${titel}`;        ergebnisListe.appendChild(li);      });    }  </script>
+</body></html>

@@ -1,0 +1,30 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f8f8;
+  padding: 20px;
+  text-align: center;
+}
+
+input[type="text"] {
+  padding: 10px;
+  width: 60%;
+  font-size: 16px;
+  margin: 20px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#buecherListe {
+  list-style-type: none;
+  padding: 0;
+  width: 60%;
+  margin: 0 auto;
+  font-size: 18px;
+}
+
+#buecherListe li {
+  padding: 10px;
+  background-color: #eee;
+  margin-bottom: 8px;
+  border-radius: 5px;
+}

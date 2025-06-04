@@ -1,374 +1,136 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bücher-Serien Experte</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       background: #f5f7fa;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px;
       color: #333;
-      line-height: 1.6;
     }
+
     h1 {
+      text-align: center;
       color: #2c3e50;
-      text-align: center;
-      margin-bottom: 25px;
       border-bottom: 2px solid #3498db;
-      padding-bottom: 15px;
+      padding-bottom: 10px;
     }
-    .author-header {
-      background: #2c3e50;
-      color: white;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 25px;
-      text-align: center;
-    }
-    .author-name {
-      font-size: 1.5em;
-      margin: 0;
-    }
+
     .search-box {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
       text-align: center;
+      margin: 30px 0;
     }
+
     #suchfeld {
-      padding: 12px 15px;
-      width: 70%;
+      width: 60%;
+      padding: 10px;
       font-size: 16px;
-      border: 2px solid #dfe6e9;
       border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
     }
-    #suchbutton {
-      padding: 12px 25px;
-      background: #3498db;
+
+    #suchenButton {
+      padding: 10px 20px;
+      background-color: #3498db;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-size: 16px;
-      margin-left: 10px;
-      transition: background 0.3s;
     }
-    #suchbutton:hover {
-      background: #2980b9;
+
+    #suchenButton:hover {
+      background-color: #2980b9;
     }
-    .serien-container {
-      margin-bottom: 40px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      overflow: hidden;
-    }
-    .serien-header {
-      background: #3498db;
-      color: white;
-      padding: 15px 20px;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    .serien-subheader {
-      background: #e3f2fd;
-      padding: 10px 20px;
-      font-size: 0.95em;
-      color: #0d47a1;
-      border-bottom: 1px solid #bbdefb;
-    }
-    .buch-liste {
-      padding: 0;
-      margin: 0;
-    }
-    .buch-item {
-      padding: 15px 20px;
-      border-bottom: 1px solid #f0f0f0;
+
+    .buchliste {
       display: flex;
-      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
     }
-    .buch-item:last-child {
-      border-bottom: none;
-    }
-    .band-nr {
-      min-width: 30px;
-      font-weight: bold;
-      color: #0d47a1;
-      margin-right: 15px;
-    }
-    .buch-details {
-      flex: 1;
-    }
-    .buch-titel {
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #2c3e50;
-    }
-    .buch-jahr {
-      color: #7f8c8d;
-      font-size: 0.9em;
-    }
-    .extra-buch {
-      padding: 15px 20px;
-      background: #f9f9f9;
-      border-top: 1px dashed #ddd;
-    }
-    .single-books-container {
+
+    .buch {
       background: white;
       border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      margin-top: 30px;
-      padding: 20px;
-    }
-    .single-books-header {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #3498db;
-    }
-    .message {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      width: 200px;
       text-align: center;
-      padding: 30px;
-      color: #7f8c8d;
-      font-style: italic;
     }
-    .no-results {
-      text-align: center;
-      padding: 30px;
-      color: #e74c3c;
-      font-weight: bold;
-    }
-    .cover-image {
-      width: 80px;
+
+    .buch img {
+      max-width: 100%;
       height: auto;
       border-radius: 4px;
-      margin-right: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .book-with-cover {
-      display: flex;
-      align-items: center;
+
+    .titel {
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    .jahr {
+      color: #888;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <h1>📚 Bücher-Serien Experte</h1>
-  
+  <h1>Bücher-Serien Experte</h1>
+
   <div class="search-box">
-    <input type="text" id="suchfeld" placeholder="Autor eingeben (z.B. 'Andreas Winkelmann')" autocomplete="off">
-    <button id="suchbutton" type="button">Suchen</button>
+    <input type="text" id="suchfeld" placeholder="Autor eingeben (z. B. J.K. Rowling)" />
+    <button id="suchenButton">Suchen</button>
   </div>
-  
-  <div id="ergebnisse">
-    <div class="message">Geben Sie einen Autor-Namen ein, um dessen Bücher und Serien anzuzeigen</div>
-  </div>
+
+  <div id="ergebnisse" class="buchliste"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const suchfeld = document.getElementById('suchfeld');
-      const suchbutton = document.getElementById('suchbutton');
-      const ergebnisse = document.getElementById('ergebnisse');
-      
-      let currentAuthor = "";
-      
-      suchbutton.addEventListener('click', sucheBuecher);
-      suchfeld.addEventListener('keypress', (e) => e.key === 'Enter' && sucheBuecher());
+    document.getElementById("suchenButton").addEventListener("click", async () => {
+      const suchbegriff = document.getElementById("suchfeld").value.trim();
+      const ergebnisDiv = document.getElementById("ergebnisse");
+      ergebnisDiv.innerHTML = "";
 
-      async function sucheBuecher() {
-        const autor = suchfeld.value.trim();
-        if (autor.length < 3) {
-          ergebnisse.innerHTML = '<div class="message">Bitte mindestens 3 Zeichen eingeben</div>';
+      if (!suchbegriff) {
+        alert("Bitte einen Autorennamen eingeben.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://openlibrary.org/search.json?author=${encodeURIComponent(suchbegriff)}&limit=20`);
+        const data = await response.json();
+
+        if (data.docs.length === 0) {
+          ergebnisDiv.innerHTML = "<p>Keine Bücher gefunden.</p>";
           return;
         }
-        
-        // Setze den aktuellen Autor
-        currentAuthor = autor;
-        
-        ergebnisse.innerHTML = '<div class="message">Suche läuft...</div>';
-        
-        try {
-          // Hier würde normalerweise die API-Abfrage stehen
-          // Für dieses Beispiel verwenden wir statische Daten
-          const autorDaten = getAutorDaten(autor);
-          
-          if (!autorDaten) {
-            ergebnisse.innerHTML = `
-              <div class="author-header">
-                <h2 class="author-name">${autor}</h2>
-              </div>
-              <div class="no-results">Keine Bücher gefunden für diesen Autor</div>
-            `;
-            return;
-          }
-          
-          zeigeAutorErgebnisse(autorDaten);
-          
-        } catch (error) {
-          console.error('Fehler:', error);
-          ergebnisse.innerHTML = '<div class="message">Fehler bei der Suche</div>';
-        }
-      }
 
-      // Diese Funktion simuliert die API-Antwort basierend auf dem Autorennamen
-      function getAutorDaten(autorName) {
-        // Beispiel-Daten für verschiedene Autoren
-        const autorenDatenbank = {
-          "andreas winkelmann": {
-            name: "Andreas Winkelmann",
-            serien: [
-              {
-                name: "Kerner & Oswald-Reihe",
-                buecher: [
-                  { titel: "Das Haus der Mädchen", jahr: 2018, cover: "https://covers.openlibrary.org/b/id/10574995-M.jpg" },
-                  { titel: "Die Lieferung", jahr: 2019, cover: "https://covers.openlibrary.org/b/id/10574996-M.jpg" },
-                  { titel: "Der Fahrer", jahr: 2020, cover: "https://covers.openlibrary.org/b/id/10574997-M.jpg" },
-                  { titel: "Die Karte", jahr: 2021, cover: "https://covers.openlibrary.org/b/id/10574998-M.jpg" }
-                ]
-              },
-              {
-                name: "Manuela Sperling-Serie",
-                buecher: [
-                  { titel: "Wassermanns Zorn", jahr: 2012, cover: "https://covers.openlibrary.org/b/id/10574999-M.jpg" },
-                  { titel: "Die Zucht", jahr: 2015, cover: "https://covers.openlibrary.org/b/id/10575000-M.jpg" },
-                  { titel: "Der Schlot", jahr: 2016, cover: "https://covers.openlibrary.org/b/id/10575001-M.jpg" }
-                ],
-                extra: [
-                  { titel: "Deathbook", jahr: 2013, hinweis: "mit Figuren aus der Sperling-Reihe", cover: "https://covers.openlibrary.org/b/id/10575002-M.jpg" }
-                ]
-              },
-              {
-                name: "Nele Kaminter-Thriller",
-                buecher: [
-                  { titel: "Tief im Wald und unter der Erde", jahr: 2009, cover: "https://covers.openlibrary.org/b/id/10575003-M.jpg" },
-                  { titel: "Bleicher Tod", jahr: 2011, cover: "https://covers.openlibrary.org/b/id/10575004-M.jpg" }
-                ]
-              }
-            ],
-            einzelbuecher: [
-              { titel: "Der Gesang des Blutes", jahr: 2007, cover: "https://covers.openlibrary.org/b/id/10575005-M.jpg" },
-              { titel: "Hänschen Klein", jahr: 2010, cover: "https://covers.openlibrary.org/b/id/10575006-M.jpg" },
-              { titel: "Blinder Instinkt", jahr: 2012, cover: "https://covers.openlibrary.org/b/id/10575007-M.jpg" },
-              { titel: "Mord im Himmelreich", jahr: 2024, cover: "https://covers.openlibrary.org/b/id/10575008-M.jpg" }
-            ]
-          },
-          "stephen king": {
-            name: "Stephen King",
-            serien: [
-              {
-                name: "Der Dunkle Turm",
-                buecher: [
-                  { titel: "Schwarz", jahr: 1982 },
-                  { titel: "Drei", jahr: 1987 },
-                  { titel: "Tot", jahr: 1991 },
-                  { titel: "Glas", jahr: 1997 }
-                ]
-              }
-            ],
-            einzelbuecher: [
-              { titel: "Es", jahr: 1986 },
-              { titel: "The Shining", jahr: 1977 }
-            ]
-          }
-        };
-        
-        // Normalisiere den Autorennamen für den Abgleich
-        const normalizedAutor = autorName.toLowerCase();
-        
-        // Finde passende Autoren (einfache Suche nach Teilübereinstimmung)
-        for (const [key, daten] of Object.entries(autorenDatenbank)) {
-          if (normalizedAutor.includes(key) || key.includes(normalizedAutor)) {
-            return daten;
-          }
-        }
-        
-        return null;
-      }
+        data.docs.forEach(buch => {
+          const div = document.createElement("div");
+          div.className = "buch";
 
-      function zeigeAutorErgebnisse(autorDaten) {
-        let html = `
-          <div class="author-header">
-            <h2 class="author-name">${autorDaten.name}</h2>
-          </div>
-        `;
-        
-        // Serien anzeigen
-        if (autorDaten.serien && autorDaten.serien.length > 0) {
-          autorDaten.serien.forEach(serie => {
-            html += `
-              <div class="serien-container">
-                <div class="serien-header">${serie.name}</div>
-                <div class="serien-subheader">in der richtigen Reihenfolge:</div>
-                <ul class="buch-liste">
-            `;
-            
-            serie.buecher.forEach((buch, index) => {
-              html += `
-                <li class="buch-item">
-                  <div class="band-nr">${index + 1}.</div>
-                  <div class="${buch.cover ? 'book-with-cover' : ''}">
-                    ${buch.cover ? `<img src="${buch.cover}" class="cover-image" alt="Cover">` : ''}
-                    <div class="buch-details">
-                      <div class="buch-titel">${buch.titel}</div>
-                      <div class="buch-jahr">(${buch.jahr})</div>
-                    </div>
-                  </div>
-                </li>
-              `;
-            });
-            
-            html += `</ul>`;
-            
-            // Extra-Bücher zur Serie
-            if (serie.extra && serie.extra.length > 0) {
-              serie.extra.forEach(extra => {
-                html += `
-                  <div class="extra-buch ${extra.cover ? 'book-with-cover' : ''}">
-                    ${extra.cover ? `<img src="${extra.cover}" class="cover-image" alt="Cover">` : ''}
-                    <div class="buch-details">
-                      <div class="buch-titel">${extra.titel}</div>
-                      <div class="buch-jahr">(${extra.jahr}${extra.hinweis ? `, ${extra.hinweis}` : ''})</div>
-                    </div>
-                  </div>
-                `;
-              });
-            }
-            
-            html += `</div>`;
-          });
-        }
-        
-        // Einzelbände anzeigen
-        if (autorDaten.einzelbuecher && autorDaten.einzelbuecher.length > 0) {
-          html += `
-            <div class="single-books-container">
-              <div class="single-books-header">Weitere Bücher von ${autorDaten.name}</div>
-              <ul class="buch-liste">
+          const coverId = buch.cover_i;
+          const titel = buch.title;
+          const jahr = buch.first_publish_year;
+          const serie = buch.series ? buch.series.join(", ") : "";
+
+          div.innerHTML = `
+            ${coverId ? `<img src="https://covers.openlibrary.org/b/id/${coverId}-M.jpg" alt="Cover">` : '<div style="height:240px;background:#eee;display:flex;align-items:center;justify-content:center;">Kein Cover</div>'}
+            <div class="titel">${titel}</div>
+            ${jahr ? `<div class="jahr">Erschienen: ${jahr}</div>` : ""}
+            ${serie ? `<div class="jahr">Serie: ${serie}</div>` : ""}
           `;
-          
-          autorDaten.einzelbuecher.forEach(buch => {
-            html += `
-              <li class="buch-item ${buch.cover ? 'book-with-cover' : ''}">
-                ${buch.cover ? `<img src="${buch.cover}" class="cover-image" alt="Cover">` : ''}
-                <div class="buch-details">
-                  <div class="buch-titel">${buch.titel}</div>
-                  <div class="buch-jahr">(${buch.jahr})</div>
-                </div>
-              </li>
-            `;
-          });
-          
-          html += `</ul></div>`;
-        }
-        
-        ergebnisse.innerHTML = html;
+          ergebnisDiv.appendChild(div);
+        });
+      } catch (error) {
+        ergebnisDiv.innerHTML = `<p>Fehler beim Laden der Daten: ${error.message}</p>`;
       }
     });
   </script>

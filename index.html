@@ -27,6 +27,11 @@
       padding: 15px;
       border-radius: 8px;
       margin-bottom: 25px;
+      text-align: center;
+    }
+    .author-name {
+      font-size: 1.5em;
+      margin: 0;
     }
     .search-box {
       background: white;
@@ -135,12 +140,22 @@
       color: #7f8c8d;
       font-style: italic;
     }
-    .cover-small {
-      width: 60px;
+    .no-results {
+      text-align: center;
+      padding: 30px;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .cover-image {
+      width: 80px;
       height: auto;
       border-radius: 4px;
       margin-right: 15px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .book-with-cover {
+      display: flex;
+      align-items: center;
     }
   </style>
 </head>
@@ -162,6 +177,8 @@
       const suchbutton = document.getElementById('suchbutton');
       const ergebnisse = document.getElementById('ergebnisse');
       
+      let currentAuthor = "";
+      
       suchbutton.addEventListener('click', sucheBuecher);
       suchfeld.addEventListener('keypress', (e) => e.key === 'Enter' && sucheBuecher());
 
@@ -172,48 +189,25 @@
           return;
         }
         
+        // Setze den aktuellen Autor
+        currentAuthor = autor;
+        
         ergebnisse.innerHTML = '<div class="message">Suche läuft...</div>';
         
         try {
-          // Beispiel-Daten - in der Praxis würdest du die API-Abfrage hier einfügen
-          const autorDaten = {
-            name: autor,
-            serien: [
-              {
-                name: "Kerner & Oswald-Reihe",
-                buecher: [
-                  { titel: "Das Haus der Mädchen", jahr: 2018 },
-                  { titel: "Die Lieferung", jahr: 2019 },
-                  { titel: "Der Fahrer", jahr: 2020 },
-                  { titel: "Die Karte", jahr: 2021 }
-                ]
-              },
-              {
-                name: "Manuela Sperling-Serie",
-                buecher: [
-                  { titel: "Wassermanns Zorn", jahr: 2012 },
-                  { titel: "Die Zucht", jahr: 2015 },
-                  { titel: "Der Schlot", jahr: 2016 }
-                ],
-                extra: [
-                  { titel: "Deathbook", jahr: 2013, hinweis: "mit Figuren aus der Sperling-Reihe" }
-                ]
-              },
-              {
-                name: "Nele Kaminter-Thriller",
-                buecher: [
-                  { titel: "Tief im Wald und unter der Erde", jahr: 2009 },
-                  { titel: "Bleicher Tod", jahr: 2011 }
-                ]
-              }
-            ],
-            einzelbuecher: [
-              { titel: "Der Gesang des Blutes", jahr: 2007 },
-              { titel: "Hänschen Klein", jahr: 2010 },
-              { titel: "Blinder Instinkt", jahr: 2012 },
-              { titel: "Mord im Himmelreich", jahr: 2024 }
-            ]
-          };
+          // Hier würde normalerweise die API-Abfrage stehen
+          // Für dieses Beispiel verwenden wir statische Daten
+          const autorDaten = getAutorDaten(autor);
+          
+          if (!autorDaten) {
+            ergebnisse.innerHTML = `
+              <div class="author-header">
+                <h2 class="author-name">${autor}</h2>
+              </div>
+              <div class="no-results">Keine Bücher gefunden für diesen Autor</div>
+            `;
+            return;
+          }
           
           zeigeAutorErgebnisse(autorDaten);
           
@@ -223,53 +217,136 @@
         }
       }
 
+      // Diese Funktion simuliert die API-Antwort basierend auf dem Autorennamen
+      function getAutorDaten(autorName) {
+        // Beispiel-Daten für verschiedene Autoren
+        const autorenDatenbank = {
+          "andreas winkelmann": {
+            name: "Andreas Winkelmann",
+            serien: [
+              {
+                name: "Kerner & Oswald-Reihe",
+                buecher: [
+                  { titel: "Das Haus der Mädchen", jahr: 2018, cover: "https://covers.openlibrary.org/b/id/10574995-M.jpg" },
+                  { titel: "Die Lieferung", jahr: 2019, cover: "https://covers.openlibrary.org/b/id/10574996-M.jpg" },
+                  { titel: "Der Fahrer", jahr: 2020, cover: "https://covers.openlibrary.org/b/id/10574997-M.jpg" },
+                  { titel: "Die Karte", jahr: 2021, cover: "https://covers.openlibrary.org/b/id/10574998-M.jpg" }
+                ]
+              },
+              {
+                name: "Manuela Sperling-Serie",
+                buecher: [
+                  { titel: "Wassermanns Zorn", jahr: 2012, cover: "https://covers.openlibrary.org/b/id/10574999-M.jpg" },
+                  { titel: "Die Zucht", jahr: 2015, cover: "https://covers.openlibrary.org/b/id/10575000-M.jpg" },
+                  { titel: "Der Schlot", jahr: 2016, cover: "https://covers.openlibrary.org/b/id/10575001-M.jpg" }
+                ],
+                extra: [
+                  { titel: "Deathbook", jahr: 2013, hinweis: "mit Figuren aus der Sperling-Reihe", cover: "https://covers.openlibrary.org/b/id/10575002-M.jpg" }
+                ]
+              },
+              {
+                name: "Nele Kaminter-Thriller",
+                buecher: [
+                  { titel: "Tief im Wald und unter der Erde", jahr: 2009, cover: "https://covers.openlibrary.org/b/id/10575003-M.jpg" },
+                  { titel: "Bleicher Tod", jahr: 2011, cover: "https://covers.openlibrary.org/b/id/10575004-M.jpg" }
+                ]
+              }
+            ],
+            einzelbuecher: [
+              { titel: "Der Gesang des Blutes", jahr: 2007, cover: "https://covers.openlibrary.org/b/id/10575005-M.jpg" },
+              { titel: "Hänschen Klein", jahr: 2010, cover: "https://covers.openlibrary.org/b/id/10575006-M.jpg" },
+              { titel: "Blinder Instinkt", jahr: 2012, cover: "https://covers.openlibrary.org/b/id/10575007-M.jpg" },
+              { titel: "Mord im Himmelreich", jahr: 2024, cover: "https://covers.openlibrary.org/b/id/10575008-M.jpg" }
+            ]
+          },
+          "stephen king": {
+            name: "Stephen King",
+            serien: [
+              {
+                name: "Der Dunkle Turm",
+                buecher: [
+                  { titel: "Schwarz", jahr: 1982 },
+                  { titel: "Drei", jahr: 1987 },
+                  { titel: "Tot", jahr: 1991 },
+                  { titel: "Glas", jahr: 1997 }
+                ]
+              }
+            ],
+            einzelbuecher: [
+              { titel: "Es", jahr: 1986 },
+              { titel: "The Shining", jahr: 1977 }
+            ]
+          }
+        };
+        
+        // Normalisiere den Autorennamen für den Abgleich
+        const normalizedAutor = autorName.toLowerCase();
+        
+        // Finde passende Autoren (einfache Suche nach Teilübereinstimmung)
+        for (const [key, daten] of Object.entries(autorenDatenbank)) {
+          if (normalizedAutor.includes(key) || key.includes(normalizedAutor)) {
+            return daten;
+          }
+        }
+        
+        return null;
+      }
+
       function zeigeAutorErgebnisse(autorDaten) {
         let html = `
           <div class="author-header">
-            <h2>${autorDaten.name}</h2>
+            <h2 class="author-name">${autorDaten.name}</h2>
           </div>
         `;
         
         // Serien anzeigen
-        autorDaten.serien.forEach(serie => {
-          html += `
-            <div class="serien-container">
-              <div class="serien-header">${serie.name}</div>
-              <div class="serien-subheader">in der richtigen Reihenfolge:</div>
-              <ul class="buch-liste">
-          `;
-          
-          serie.buecher.forEach((buch, index) => {
+        if (autorDaten.serien && autorDaten.serien.length > 0) {
+          autorDaten.serien.forEach(serie => {
             html += `
-              <li class="buch-item">
-                <div class="band-nr">${index + 1}.</div>
-                <div class="buch-details">
-                  <div class="buch-titel">${buch.titel}</div>
-                  <div class="buch-jahr">(${buch.jahr})</div>
-                </div>
-              </li>
+              <div class="serien-container">
+                <div class="serien-header">${serie.name}</div>
+                <div class="serien-subheader">in der richtigen Reihenfolge:</div>
+                <ul class="buch-liste">
             `;
-          });
-          
-          html += `</ul>`;
-          
-          // Extra-Bücher zur Serie
-          if (serie.extra) {
-            serie.extra.forEach(extra => {
+            
+            serie.buecher.forEach((buch, index) => {
               html += `
-                <div class="extra-buch">
-                  <div class="buch-titel">${extra.titel}</div>
-                  <div class="buch-jahr">(${extra.jahr}${extra.hinweis ? `, ${extra.hinweis}` : ''})</div>
-                </div>
+                <li class="buch-item">
+                  <div class="band-nr">${index + 1}.</div>
+                  <div class="${buch.cover ? 'book-with-cover' : ''}">
+                    ${buch.cover ? `<img src="${buch.cover}" class="cover-image" alt="Cover">` : ''}
+                    <div class="buch-details">
+                      <div class="buch-titel">${buch.titel}</div>
+                      <div class="buch-jahr">(${buch.jahr})</div>
+                    </div>
+                  </div>
+                </li>
               `;
             });
-          }
-          
-          html += `</div>`;
-        });
+            
+            html += `</ul>`;
+            
+            // Extra-Bücher zur Serie
+            if (serie.extra && serie.extra.length > 0) {
+              serie.extra.forEach(extra => {
+                html += `
+                  <div class="extra-buch ${extra.cover ? 'book-with-cover' : ''}">
+                    ${extra.cover ? `<img src="${extra.cover}" class="cover-image" alt="Cover">` : ''}
+                    <div class="buch-details">
+                      <div class="buch-titel">${extra.titel}</div>
+                      <div class="buch-jahr">(${extra.jahr}${extra.hinweis ? `, ${extra.hinweis}` : ''})</div>
+                    </div>
+                  </div>
+                `;
+              });
+            }
+            
+            html += `</div>`;
+          });
+        }
         
         // Einzelbände anzeigen
-        if (autorDaten.einzelbuecher.length > 0) {
+        if (autorDaten.einzelbuecher && autorDaten.einzelbuecher.length > 0) {
           html += `
             <div class="single-books-container">
               <div class="single-books-header">Weitere Bücher von ${autorDaten.name}</div>
@@ -278,7 +355,8 @@
           
           autorDaten.einzelbuecher.forEach(buch => {
             html += `
-              <li class="buch-item">
+              <li class="buch-item ${buch.cover ? 'book-with-cover' : ''}">
+                ${buch.cover ? `<img src="${buch.cover}" class="cover-image" alt="Cover">` : ''}
                 <div class="buch-details">
                   <div class="buch-titel">${buch.titel}</div>
                   <div class="buch-jahr">(${buch.jahr})</div>
@@ -292,10 +370,6 @@
         
         ergebnisse.innerHTML = html;
       }
-      
-      // Beispiel-Suche beim Laden, falls gewünscht
-      // suchfeld.value = "Andreas Winkelmann";
-      // sucheBuecher();
     });
   </script>
 </body>

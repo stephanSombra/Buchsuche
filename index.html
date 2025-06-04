@@ -18,81 +18,138 @@
       color: #2c3e50;
       border-bottom: 2px solid #3498db;
       padding-bottom: 10px;
+      margin-bottom: 30px;
     }
     .search-box {
       text-align: center;
       margin: 30px 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
     }
     #suchfeld {
       width: 60%;
-      padding: 10px;
+      padding: 12px 15px;
       font-size: 16px;
       border-radius: 6px;
-      border: 1px solid #ccc;
+      border: 2px solid #dfe6e9;
+      transition: border-color 0.3s;
+    }
+    #suchfeld:focus {
+      border-color: #3498db;
+      outline: none;
     }
     #sucheBtn {
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-size: 16px;
-      margin-left: 10px;
       background-color: #3498db;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      transition: background-color 0.3s;
     }
-    .buchliste {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
+    #sucheBtn:hover {
+      background-color: #2980b9;
     }
-    .buch {
-      background: white;
+    .autor-header {
+      background: #2c3e50;
+      color: white;
       padding: 15px;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      width: 200px;
+      margin-bottom: 25px;
       text-align: center;
     }
-    .buch img {
-      max-width: 100%;
+    .autor-name {
+      font-size: 1.5em;
+      margin: 0;
+    }
+    .serien-container {
+      margin-bottom: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .serien-header {
+      background: #3498db;
+      color: white;
+      padding: 15px 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .serien-subheader {
+      background: #e3f2fd;
+      padding: 10px 20px;
+      font-size: 0.95em;
+      color: #0d47a1;
+      border-bottom: 1px solid #bbdefb;
+    }
+    .buch-liste {
+      padding: 0;
+      margin: 0;
+    }
+    .buch-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+    }
+    .buch-item:last-child {
+      border-bottom: none;
+    }
+    .band-nr {
+      min-width: 30px;
+      font-weight: bold;
+      color: #0d47a1;
+      margin-right: 15px;
+    }
+    .buch-details {
+      flex: 1;
+    }
+    .buch-titel {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #2c3e50;
+    }
+    .buch-jahr {
+      color: #7f8c8d;
+      font-size: 0.9em;
+    }
+    .cover-image {
+      width: 80px;
       height: auto;
       border-radius: 4px;
+      margin-right: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .buch h3 {
-      font-size: 1.1em;
-      margin: 10px 0 5px;
+    .single-books-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      margin-top: 30px;
+      padding: 20px;
     }
-    .buch p {
-      font-size: 0.9em;
-      color: #666;
-      margin: 3px 0;
-    }
-    .serie-name {
+    .single-books-header {
+      font-size: 1.2em;
       font-weight: bold;
-      color: #2980b9;
-      margin-top: 10px;
-      font-size: 0.9em;
-      width: 100%;
-      text-align: left;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
     }
-    .debug {
-      font-family: monospace;
-      font-size: 0.85em;
-      color: #888;
-      margin-top: 20px;
-      white-space: pre-wrap;
-      text-align: left;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-      background: #eef2f7;
-      padding: 10px;
-      border-radius: 6px;
-      overflow-x: auto;
-      display: none;
+    .message {
+      text-align: center;
+      padding: 30px;
+      color: #7f8c8d;
+      font-style: italic;
     }
-    /* Ladeanimation Punkte */
+    .no-results {
+      text-align: center;
+      padding: 30px;
+      color: #e74c3c;
+      font-weight: bold;
+    }
     .loading-dots::after {
       content: '';
       display: inline-block;
@@ -114,6 +171,9 @@
         content: '...';
       }
     }
+    .debug {
+      display: none; /* Debug-Info standardmäßig ausblenden */
+    }
   </style>
 </head>
 <body>
@@ -124,145 +184,181 @@
     <button id="sucheBtn">Suchen</button>
   </div>
 
-  <div class="buchliste" id="ergebnisse"></div>
+  <div id="ergebnisse">
+    <div class="message">Geben Sie einen Autor-Namen ein, um dessen Bücher und Serien anzuzeigen</div>
+  </div>
+
   <div class="debug" id="debugInfo"></div>
 
   <script>
-    function parsePositionFromTitle(title) {
-      const regex = /(Band|Teil|Book|Volume|Vol)\s?(\d+)/i;
-      const match = title.match(regex);
-      if (match) {
-        return parseInt(match[2], 10);
-      }
-      return null;
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const suchfeld = document.getElementById('suchfeld');
+      const sucheBtn = document.getElementById('sucheBtn');
+      const ergebnisse = document.getElementById('ergebnisse');
+      const debugInfo = document.getElementById('debugInfo');
+      
+      sucheBtn.addEventListener('click', sucheAutor);
+      suchfeld.addEventListener('keypress', (e) => e.key === 'Enter' && sucheAutor());
 
-    async function sucheAutor() {
-      const autor = document.getElementById("suchfeld").value.trim();
-      const ergebnisse = document.getElementById("ergebnisse");
-      const debugInfo = document.getElementById("debugInfo");
-      debugInfo.style.display = "none";
-      debugInfo.textContent = "";
-
-      if (!autor) {
-        ergebnisse.innerHTML = "<p>Bitte gib einen Autorennamen ein.</p>";
-        return;
-      }
-
-      ergebnisse.innerHTML = `<p>Suche läuft<span class="loading-dots"></span></p>`;
-
-      try {
-        const resAutor = await fetch(`https://openlibrary.org/search/authors.json?q=${encodeURIComponent(autor)}`);
-        if (!resAutor.ok) throw new Error(`Fehler bei Autorensuche: ${resAutor.status}`);
-        const dataAutor = await resAutor.json();
-
-        debugInfo.style.display = "block";
-        debugInfo.textContent = `Autorensuche Ergebnis:\n${JSON.stringify(dataAutor, null, 2)}`;
-
-        if (!dataAutor.docs || dataAutor.docs.length === 0) {
-          ergebnisse.innerHTML = "<p>Kein Autor gefunden.</p>";
+      async function sucheAutor() {
+        const autor = suchfeld.value.trim();
+        if (autor.length < 2) {
+          ergebnisse.innerHTML = '<div class="message">Bitte geben Sie mindestens 2 Zeichen ein</div>';
           return;
         }
-
-        const authorKey = dataAutor.docs[0].key;
-
-        const resWorks = await fetch(`https://openlibrary.org${authorKey}/works.json?limit=50`);
-        if (!resWorks.ok) throw new Error(`Fehler bei Werkenabfrage: ${resWorks.status}`);
-        const dataWorks = await resWorks.json();
-
-        debugInfo.textContent += `\n\nWerke des Autors:\n${JSON.stringify(dataWorks, null, 2)}`;
-
-        if (!dataWorks.entries || dataWorks.entries.length === 0) {
-          ergebnisse.innerHTML = "<p>Keine Bücher gefunden.</p>";
-          return;
-        }
-
-        const buecher = dataWorks.entries.map(buch => {
-          let serie = null;
-          if (buch.series) {
-            if (Array.isArray(buch.series)) {
-              serie = buch.series[0];
-            } else if (typeof buch.series === "string") {
-              serie = buch.series;
+        
+        ergebnisse.innerHTML = '<div class="message">Suche läuft<span class="loading-dots"></span></div>';
+        debugInfo.textContent = "";
+        
+        try {
+          // Autorensuche
+          const resAutor = await fetch(`https://openlibrary.org/search/authors.json?q=${encodeURIComponent(autor)}`);
+          if (!resAutor.ok) throw new Error(`Fehler bei Autorensuche: ${resAutor.status}`);
+          const dataAutor = await resAutor.json();
+          
+          if (!dataAutor.docs || dataAutor.docs.length === 0) {
+            ergebnisse.innerHTML = '<div class="no-results">Kein Autor gefunden</div>';
+            return;
+          }
+          
+          const authorKey = dataAutor.docs[0].key;
+          const authorName = dataAutor.docs[0].name;
+          
+          // Werke des Autors
+          const resWorks = await fetch(`https://openlibrary.org${authorKey}/works.json?limit=100`);
+          if (!resWorks.ok) throw new Error(`Fehler bei Werkenabfrage: ${resWorks.status}`);
+          const dataWorks = await resWorks.json();
+          
+          if (!dataWorks.entries || dataWorks.entries.length === 0) {
+            ergebnisse.innerHTML = '<div class="no-results">Keine Bücher gefunden für diesen Autor</div>';
+            return;
+          }
+          
+          // Bücher verarbeiten
+          const buecher = dataWorks.entries.map(buch => {
+            let serie = null;
+            if (buch.series) {
+              if (Array.isArray(buch.series)) {
+                serie = buch.series[0];
+              } else if (typeof buch.series === "string") {
+                serie = buch.series;
+              }
             }
-          }
-
-          let position = null;
-          if (buch.series_position) {
-            position = parseFloat(buch.series_position);
-          } else {
-            position = parsePositionFromTitle(buch.title);
-          }
-
-          return {
-            title: buch.title,
-            year: buch.first_publish_date || "unbekannt",
-            coverId: buch.covers ? buch.covers[0] : null,
-            serie: serie,
-            position: position
-          };
-        });
-
-        buecher.sort((a, b) => {
-          if (a.serie && b.serie) {
-            if (a.serie.toLowerCase() < b.serie.toLowerCase()) return -1;
-            if (a.serie.toLowerCase() > b.serie.toLowerCase()) return 1;
-
-            if (a.position !== null && b.position !== null) {
-              return a.position - b.position;
-            } else if (a.position !== null) {
-              return -1;
-            } else if (b.position !== null) {
-              return 1;
+            
+            let position = null;
+            if (buch.series_position) {
+              position = parseFloat(buch.series_position);
             } else {
-              return a.title.localeCompare(b.title);
+              position = parsePositionFromTitle(buch.title);
             }
-          } else if (a.serie && !b.serie) {
-            return -1;
-          } else if (!a.serie && b.serie) {
-            return 1;
-          } else {
-            return a.title.localeCompare(b.title);
-          }
-        });
-
-        ergebnisse.innerHTML = "";
-        let letzteSerie = null;
-
-        buecher.forEach(buch => {
-          if (buch.serie !== letzteSerie) {
+            
+            return {
+              titel: buch.title,
+              jahr: buch.first_publish_date || "unbekannt",
+              cover: buch.covers?.[0] 
+                ? `https://covers.openlibrary.org/b/id/${buch.covers[0]}-M.jpg` 
+                : null,
+              serie: serie,
+              position: position
+            };
+          });
+          
+          // Bücher gruppieren nach Serien
+          const serienMap = {};
+          const einzelbuecher = [];
+          
+          buecher.forEach(buch => {
             if (buch.serie) {
-              ergebnisse.innerHTML += `<div class="serie-name">Serie: ${buch.serie}</div>`;
+              if (!serienMap[buch.serie]) {
+                serienMap[buch.serie] = [];
+              }
+              serienMap[buch.serie].push(buch);
+            } else {
+              einzelbuecher.push(buch);
             }
-            letzteSerie = buch.serie;
-          }
-
-          const coverURL = buch.coverId
-            ? `https://covers.openlibrary.org/b/id/${buch.coverId}-M.jpg`
-            : "https://via.placeholder.com/200x300?text=Kein+Cover";
-
-          ergebnisse.innerHTML += `
-            <div class="buch">
-              <img src="${coverURL}" alt="${buch.title}" />
-              <h3>${buch.title}</h3>
-              <p>Erscheinungsjahr: ${buch.year}</p>
-              ${buch.position !== null ? `<p>Reihenfolge: ${buch.position}</p>` : ''}
-            </div>
-          `;
-        });
-
-      } catch (err) {
-        ergebnisse.innerHTML = "<p>Fehler bei der Suche. Bitte versuche es später erneut.</p>";
-        debugInfo.style.display = "block";
-        debugInfo.textContent = `Fehler: ${err.message}`;
-        console.error(err);
+          });
+          
+          // Bücher in Serien sortieren
+          Object.values(serienMap).forEach(serie => {
+            serie.sort((a, b) => {
+              if (a.position !== null && b.position !== null) {
+                return a.position - b.position;
+              }
+              return a.titel.localeCompare(b.titel);
+            });
+          });
+          
+          // Ergebnisse anzeigen
+          zeigeAutorErgebnisse(authorName, serienMap, einzelbuecher);
+          
+        } catch (err) {
+          ergebnisse.innerHTML = '<div class="no-results">Fehler bei der Suche. Bitte versuchen Sie es später erneut.</div>';
+          console.error(err);
+        }
       }
-    }
 
-    document.getElementById("sucheBtn").addEventListener("click", sucheAutor);
-    document.getElementById("suchfeld").addEventListener("keydown", function(e) {
-      if (e.key === "Enter") {
-        sucheAutor();
+      function parsePositionFromTitle(title) {
+        const regex = /(Band|Teil|Book|Volume|Vol|#)\s?(\d+)/i;
+        const match = title.match(regex);
+        return match ? parseInt(match[2], 10) : null;
+      }
+
+      function zeigeAutorErgebnisse(authorName, serienMap, einzelbuecher) {
+        let html = `
+          <div class="autor-header">
+            <h2 class="autor-name">${authorName}</h2>
+          </div>
+        `;
+        
+        // Serien anzeigen
+        Object.entries(serienMap).forEach(([serienName, buecher]) => {
+          html += `
+            <div class="serien-container">
+              <div class="serien-header">${serienName}</div>
+              <div class="serien-subheader">in der richtigen Reihenfolge:</div>
+              <ul class="buch-liste">
+          `;
+          
+          buecher.forEach((buch, index) => {
+            html += `
+              <li class="buch-item">
+                <div class="band-nr">${index + 1}.</div>
+                <div class="buch-details">
+                  ${buch.cover ? `<img src="${buch.cover}" class="cover-image" alt="Cover">` : ''}
+                  <div class="buch-titel">${buch.titel}</div>
+                  <div class="buch-jahr">${buch.jahr}</div>
+                </div>
+              </li>
+            `;
+          });
+          
+          html += `</ul></div>`;
+        });
+        
+        // Einzelbände anzeigen
+        if (einzelbuecher.length > 0) {
+          html += `
+            <div class="single-books-container">
+              <div class="single-books-header">Weitere Bücher von ${authorName}</div>
+              <ul class="buch-liste">
+          `;
+          
+          einzelbuecher.forEach(buch => {
+            html += `
+              <li class="buch-item">
+                <div class="buch-details">
+                  ${buch.cover ? `<img src="${buch.cover}" class="cover-image" alt="Cover">` : ''}
+                  <div class="buch-titel">${buch.titel}</div>
+                  <div class="buch-jahr">${buch.jahr}</div>
+                </div>
+              </li>
+            `;
+          });
+          
+          html += `</ul></div>`;
+        }
+        
+        ergebnisse.innerHTML = html;
       }
     });
   </script>

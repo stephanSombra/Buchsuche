@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bücher-Serien Finder</title>
+  <title>Bücher-Serien Experte</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -12,10 +12,20 @@
       margin: 0 auto;
       padding: 20px;
       color: #333;
+      line-height: 1.6;
     }
     h1 {
       color: #2c3e50;
       text-align: center;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 15px;
+    }
+    .author-header {
+      background: #2c3e50;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
       margin-bottom: 25px;
     }
     .search-box {
@@ -23,7 +33,7 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       text-align: center;
     }
     #suchfeld {
@@ -42,293 +52,250 @@
       cursor: pointer;
       font-size: 16px;
       margin-left: 10px;
+      transition: background 0.3s;
     }
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin: 20px 0;
-      flex-wrap: wrap;
+    #suchbutton:hover {
+      background: #2980b9;
     }
-    .mode-btn {
-      padding: 10px 20px;
-      background: #ecf0f1;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .mode-btn.active {
-      background: #3498db;
-      color: white;
-    }
-    .serie-container {
+    .serien-container {
+      margin-bottom: 40px;
       background: white;
       border-radius: 8px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-      margin-bottom: 25px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
       overflow: hidden;
     }
-    .serie-header {
-      background: #2c3e50;
+    .serien-header {
+      background: #3498db;
       color: white;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 15px 20px;
+      font-size: 1.2em;
+      font-weight: bold;
     }
-    .serie-meta {
-      font-size: 0.9em;
-      color: #bdc3c7;
+    .serien-subheader {
+      background: #e3f2fd;
+      padding: 10px 20px;
+      font-size: 0.95em;
+      color: #0d47a1;
+      border-bottom: 1px solid #bbdefb;
     }
-    .serie-books {
+    .buch-liste {
       padding: 0;
+      margin: 0;
     }
-    .book-item {
+    .buch-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
       display: flex;
-      padding: 15px;
-      border-bottom: 1px solid #eee;
-      gap: 15px;
+      align-items: flex-start;
     }
-    .book-cover {
-      width: 80px;
-      height: auto;
-      border-radius: 4px;
+    .buch-item:last-child {
+      border-bottom: none;
     }
-    .book-details {
+    .band-nr {
+      min-width: 30px;
+      font-weight: bold;
+      color: #0d47a1;
+      margin-right: 15px;
+    }
+    .buch-details {
       flex: 1;
     }
-    .book-title {
+    .buch-titel {
       font-weight: bold;
       margin-bottom: 5px;
+      color: #2c3e50;
     }
-    .book-author {
+    .buch-jahr {
       color: #7f8c8d;
       font-size: 0.9em;
-      margin-bottom: 5px;
     }
-    .book-year {
-      color: #3498db;
-      font-size: 0.85em;
+    .extra-buch {
+      padding: 15px 20px;
+      background: #f9f9f9;
+      border-top: 1px dashed #ddd;
     }
-    .reading-order {
-      background: #f8f9fa;
-      padding: 10px 15px;
-      font-size: 0.9em;
-      border-bottom: 1px solid #ddd;
+    .single-books-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      margin-top: 30px;
+      padding: 20px;
+    }
+    .single-books-header {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
     }
     .message {
       text-align: center;
-      padding: 20px;
+      padding: 30px;
       color: #7f8c8d;
+      font-style: italic;
+    }
+    .cover-small {
+      width: 60px;
+      height: auto;
+      border-radius: 4px;
+      margin-right: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
-  <h1>📚 Bücher-Serien Finder</h1>
+  <h1>📚 Bücher-Serien Experte</h1>
   
   <div class="search-box">
-    <input type="text" id="suchfeld" placeholder="Serienname oder Autor (z.B. 'Harry Potter')" autocomplete="off">
+    <input type="text" id="suchfeld" placeholder="Autor eingeben (z.B. 'Andreas Winkelmann')" autocomplete="off">
     <button id="suchbutton" type="button">Suchen</button>
   </div>
   
-  <div class="controls">
-    <button id="btnStandard" class="mode-btn active">Standard</button>
-    <button id="btnSerien" class="mode-btn">Serien-Ansicht</button>
+  <div id="ergebnisse">
+    <div class="message">Geben Sie einen Autor-Namen ein, um dessen Bücher und Serien anzuzeigen</div>
   </div>
-  
-  <div id="ergebnisse"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const suchfeld = document.getElementById('suchfeld');
       const suchbutton = document.getElementById('suchbutton');
       const ergebnisse = document.getElementById('ergebnisse');
-      const btnStandard = document.getElementById('btnStandard');
-      const btnSerien = document.getElementById('btnSerien');
       
-      let currentBooks = [];
-      let currentSeries = [];
-      let currentMode = 'standard';
+      suchbutton.addEventListener('click', sucheBuecher);
+      suchfeld.addEventListener('keypress', (e) => e.key === 'Enter' && sucheBuecher());
 
-      // Event Listener
-      suchbutton.addEventListener('click', startSearch);
-      suchfeld.addEventListener('keypress', (e) => e.key === 'Enter' && startSearch());
-      btnStandard.addEventListener('click', () => switchMode('standard'));
-      btnSerien.addEventListener('click', () => switchMode('serien'));
-
-      async function startSearch() {
-        const query = suchfeld.value.trim();
-        if (query.length < 3) {
-          showMessage('Bitte mindestens 3 Zeichen eingeben');
+      async function sucheBuecher() {
+        const autor = suchfeld.value.trim();
+        if (autor.length < 3) {
+          ergebnisse.innerHTML = '<div class="message">Bitte mindestens 3 Zeichen eingeben</div>';
           return;
         }
         
-        showMessage('Suche läuft...');
+        ergebnisse.innerHTML = '<div class="message">Suche läuft...</div>';
         
         try {
-          // 1. OpenLibrary-Suche
-          const olResults = await searchOpenLibrary(query);
+          // Beispiel-Daten - in der Praxis würdest du die API-Abfrage hier einfügen
+          const autorDaten = {
+            name: autor,
+            serien: [
+              {
+                name: "Kerner & Oswald-Reihe",
+                buecher: [
+                  { titel: "Das Haus der Mädchen", jahr: 2018 },
+                  { titel: "Die Lieferung", jahr: 2019 },
+                  { titel: "Der Fahrer", jahr: 2020 },
+                  { titel: "Die Karte", jahr: 2021 }
+                ]
+              },
+              {
+                name: "Manuela Sperling-Serie",
+                buecher: [
+                  { titel: "Wassermanns Zorn", jahr: 2012 },
+                  { titel: "Die Zucht", jahr: 2015 },
+                  { titel: "Der Schlot", jahr: 2016 }
+                ],
+                extra: [
+                  { titel: "Deathbook", jahr: 2013, hinweis: "mit Figuren aus der Sperling-Reihe" }
+                ]
+              },
+              {
+                name: "Nele Kaminter-Thriller",
+                buecher: [
+                  { titel: "Tief im Wald und unter der Erde", jahr: 2009 },
+                  { titel: "Bleicher Tod", jahr: 2011 }
+                ]
+              }
+            ],
+            einzelbuecher: [
+              { titel: "Der Gesang des Blutes", jahr: 2007 },
+              { titel: "Hänschen Klein", jahr: 2010 },
+              { titel: "Blinder Instinkt", jahr: 2012 },
+              { titel: "Mord im Himmelreich", jahr: 2024 }
+            ]
+          };
           
-          // 2. Serien-Daten ergänzen (simulierter API-Aufruf)
-          const enhancedResults = await enhanceWithSeriesData(olResults);
-          
-          currentBooks = olResults;
-          currentSeries = groupIntoSeries(enhancedResults);
-          
-          updateView();
+          zeigeAutorErgebnisse(autorDaten);
           
         } catch (error) {
           console.error('Fehler:', error);
-          showMessage('Fehler bei der Suche');
+          ergebnisse.innerHTML = '<div class="message">Fehler bei der Suche</div>';
         }
       }
-      
-      async function searchOpenLibrary(query) {
-        const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=100`);
-        const data = await response.json();
-        
-        return data.docs
-          .filter(book => book.title && book.first_publish_year)
-          .map(book => ({
-            id: book.key.replace('/works/', ''),
-            title: book.title,
-            authors: book.author_name || ['Unbekannt'],
-            year: book.first_publish_year,
-            cover: book.cover_i 
-              ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` 
-              : null,
-            series: [] // Wird später gefüllt
-          }));
-      }
-      
-      // Simulierte Serien-Datenbank (in echt würdest du eine API wie ISBNdb nutzen)
-      async function enhanceWithSeriesData(books) {
-        // Hier kommen die "intelligenten" Serien-Erkennungsregeln
-        return books.map(book => {
-          // Beispiel: Harry Potter Serie erkennen
-          if (/harry potter/i.test(book.title)) {
-            const bandMatch = book.title.match(/(\d+)/);
-            return {
-              ...book,
-              series: [{
-                name: "Harry Potter",
-                position: bandMatch ? parseInt(bandMatch[1]) : 0
-              }]
-            };
-          }
-          
-          // Weitere Serien können hier ergänzt werden...
-          
-          return book;
-        });
-      }
-      
-      function groupIntoSeries(books) {
-        const seriesMap = {};
-        
-        books.forEach(book => {
-          book.series.forEach(serie => {
-            if (!seriesMap[serie.name]) {
-              seriesMap[serie.name] = {
-                name: serie.name,
-                books: []
-              };
-            }
-            seriesMap[serie.name].books.push({
-              ...book,
-              position: serie.position
-            });
-          });
-        });
-        
-        // Sortiere Bücher innerhalb der Serien
-        Object.values(seriesMap).forEach(serie => {
-          serie.books.sort((a, b) => a.position - b.position);
-        });
-        
-        return Object.values(seriesMap);
-      }
-      
-      function switchMode(mode) {
-        currentMode = mode;
-        updateActiveButton();
-        updateView();
-      }
-      
-      function updateView() {
-        if (currentMode === 'standard') {
-          showStandardView();
-        } else {
-          showSeriesView();
-        }
-      }
-      
-      function showStandardView() {
-        if (currentBooks.length === 0) {
-          showMessage('Keine Bücher gefunden');
-          return;
-        }
-        
-        ergebnisse.innerHTML = `
-          <div class="serie-container">
-            <div class="serie-header">
-              <span>Gefundene Bücher (${currentBooks.length})</span>
-            </div>
-            <div class="serie-books">
-              ${currentBooks.map(book => `
-                <div class="book-item">
-                  ${book.cover ? `<img src="${book.cover}" class="book-cover" alt="Cover">` : ''}
-                  <div class="book-details">
-                    <div class="book-title">${book.title}</div>
-                    <div class="book-author">${book.authors.join(', ')}</div>
-                    <div class="book-year">${book.year}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
+
+      function zeigeAutorErgebnisse(autorDaten) {
+        let html = `
+          <div class="author-header">
+            <h2>${autorDaten.name}</h2>
           </div>
         `;
-      }
-      
-      function showSeriesView() {
-        if (currentSeries.length === 0) {
-          showMessage('Keine Serien gefunden');
-          return;
+        
+        // Serien anzeigen
+        autorDaten.serien.forEach(serie => {
+          html += `
+            <div class="serien-container">
+              <div class="serien-header">${serie.name}</div>
+              <div class="serien-subheader">in der richtigen Reihenfolge:</div>
+              <ul class="buch-liste">
+          `;
+          
+          serie.buecher.forEach((buch, index) => {
+            html += `
+              <li class="buch-item">
+                <div class="band-nr">${index + 1}.</div>
+                <div class="buch-details">
+                  <div class="buch-titel">${buch.titel}</div>
+                  <div class="buch-jahr">(${buch.jahr})</div>
+                </div>
+              </li>
+            `;
+          });
+          
+          html += `</ul>`;
+          
+          // Extra-Bücher zur Serie
+          if (serie.extra) {
+            serie.extra.forEach(extra => {
+              html += `
+                <div class="extra-buch">
+                  <div class="buch-titel">${extra.titel}</div>
+                  <div class="buch-jahr">(${extra.jahr}${extra.hinweis ? `, ${extra.hinweis}` : ''})</div>
+                </div>
+              `;
+            });
+          }
+          
+          html += `</div>`;
+        });
+        
+        // Einzelbände anzeigen
+        if (autorDaten.einzelbuecher.length > 0) {
+          html += `
+            <div class="single-books-container">
+              <div class="single-books-header">Weitere Bücher von ${autorDaten.name}</div>
+              <ul class="buch-liste">
+          `;
+          
+          autorDaten.einzelbuecher.forEach(buch => {
+            html += `
+              <li class="buch-item">
+                <div class="buch-details">
+                  <div class="buch-titel">${buch.titel}</div>
+                  <div class="buch-jahr">(${buch.jahr})</div>
+                </div>
+              </li>
+            `;
+          });
+          
+          html += `</ul></div>`;
         }
         
-        ergebnisse.innerHTML = currentSeries.map(serie => `
-          <div class="serie-container">
-            <div class="serie-header">
-              <span>${serie.name}</span>
-              <span class="serie-meta">${serie.books.length} Bücher</span>
-            </div>
-            <div class="reading-order">
-              Lesereihenfolge: ${serie.books.map((b, i) => `${i+1}. ${b.title.replace(serie.name, '').trim()}`).join(' → ')}
-            </div>
-            <div class="serie-books">
-              ${serie.books.map(book => `
-                <div class="book-item">
-                  ${book.cover ? `<img src="${book.cover}" class="book-cover" alt="Cover">` : ''}
-                  <div class="book-details">
-                    <div class="book-title">${book.title}</div>
-                    <div class="book-author">${book.authors.join(', ')}</div>
-                    <div class="book-year">Band ${book.position} • ${book.year}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `).join('');
+        ergebnisse.innerHTML = html;
       }
       
-      function updateActiveButton() {
-        btnStandard.classList.toggle('active', currentMode === 'standard');
-        btnSerien.classList.toggle('active', currentMode === 'serien');
-      }
-      
-      function showMessage(text) {
-        ergebnisse.innerHTML = `<div class="message">${text}</div>`;
-      }
+      // Beispiel-Suche beim Laden, falls gewünscht
+      // suchfeld.value = "Andreas Winkelmann";
+      // sucheBuecher();
     });
   </script>
 </body>

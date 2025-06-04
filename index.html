@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bücher-Serien Experte</title>
+  <title>Autoren Online Suche</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -45,90 +45,97 @@
       cursor: pointer;
     }
 
-    .book-list {
+    .buchliste {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
     }
 
-    .book-card {
+    .buch {
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       width: 200px;
       text-align: center;
     }
 
-    .book-card img {
-      height: 260px;
-      object-fit: cover;
-      margin-bottom: 10px;
+    .buch img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
     }
 
-    .book-title {
-      font-weight: bold;
+    .buch h3 {
+      font-size: 1.1em;
+      margin: 10px 0 5px;
     }
 
-    .book-year {
-      color: #888;
+    .buch p {
       font-size: 0.9em;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <h1>Bücher-Serien Experte</h1>
+  <h1>Autoren Online Suche</h1>
 
   <div class="search-box">
-    <input type="text" id="suchfeld" placeholder="Autor eingeben (z. B. J.K. Rowling)">
+    <input type="text" id="suchfeld" placeholder="Gib den Namen eines Autors ein..." />
     <button id="sucheBtn">Suchen</button>
   </div>
 
-  <div id="ergebnisse" class="book-list"></div>
+  <div class="buchliste" id="ergebnisse"></div>
 
   <script>
     document.getElementById("sucheBtn").addEventListener("click", function () {
       const autor = document.getElementById("suchfeld").value.trim();
       if (!autor) return;
 
-      const encodedAutor = encodeURIComponent(autor);
-      const url = `https://openlibrary.org/search.json?author=${encodedAutor}`;
+      const ergebnisse = document.getElementById("ergebnisse");
+      ergebnisse.innerHTML = "Suche läuft...";
 
-      fetch(url)
-        .then(response => response.json())
+      // Erster API-Aufruf: Autor-ID finden
+      fetch(`https://openlibrary.org/search/authors.json?q=${encodeURIComponent(autor)}`)
+        .then(res => res.json())
         .then(data => {
-          const ergebnisContainer = document.getElementById("ergebnisse");
-          ergebnisContainer.innerHTML = "";
-
-          const werke = data.docs.slice(0, 20); // max. 20 Bücher anzeigen
-
-          if (werke.length === 0) {
-            ergebnisContainer.innerHTML = "<p>Keine Bücher gefunden.</p>";
+          if (data.docs.length === 0) {
+            ergebnisse.innerHTML = "Kein Autor gefunden.";
             return;
           }
 
-          werke.forEach(buch => {
-            const titel = buch.title;
-            const jahr = buch.first_publish_year || "–";
-            const coverId = buch.cover_i;
-            const bild = coverId
-              ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`
-              : "https://via.placeholder.com/150x220?text=Kein+Cover";
+          const authorKey = data.docs[0].key; // z.B. "/authors/OL23919A"
 
-            const buchDiv = document.createElement("div");
-            buchDiv.className = "book-card";
-            buchDiv.innerHTML = `
-              <img src="${bild}" alt="Cover">
-              <div class="book-title">${titel}</div>
-              <div class="book-year">Erschienen: ${jahr}</div>
-            `;
-            ergebnisContainer.appendChild(buchDiv);
-          });
-        })
-        .catch(error => {
-          console.error("Fehler bei der Abfrage:", error);
-          document.getElementById("ergebnisse").innerHTML = "<p>Fehler beim Laden der Daten.</p>";
+          // Zweiter API-Aufruf: Bücher des Autors holen
+          fetch(`https://openlibrary.org${authorKey}/works.json?limit=50`)
+            .then(res => res.json())
+            .then(data => {
+              if (!data.entries || data.entries.length === 0) {
+                ergebnisse.innerHTML = "Keine Bücher gefunden.";
+                return;
+              }
+
+              ergebnisse.innerHTML = ""; // Leeren
+
+              data.entries.forEach(buch => {
+                const titel = buch.title;
+                const jahr = buch.first_publish_date || "unbekannt";
+                const coverId = buch.covers ? buch.covers[0] : null;
+                const coverURL = coverId
+                  ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`
+                  : "https://via.placeholder.com/200x300?text=Kein+Cover";
+
+                const buchHTML = `
+                  <div class="buch">
+                    <img src="${coverURL}" alt="${titel}" />
+                    <h3>${titel}</h3>
+                    <p>Erscheinungsjahr: ${jahr}</p>
+                  </div>
+                `;
+                ergebnisse.innerHTML += buchHTML;
+              });
+            });
         });
     });
   </script>

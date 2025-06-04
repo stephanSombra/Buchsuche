@@ -5,7 +5,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bücher-Serien Experte</title>
   <style>
-    /* Dein bestehendes CSS bleibt erhalten - nur diese Ergänzungen: */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f8f9fa;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .search-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #suchfeld {
+      padding: 12px;
+      width: 70%;
+      max-width: 500px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    #suchbutton {
+      padding: 12px 25px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: 10px;
+      transition: background 0.3s;
+    }
+    #suchbutton:hover {
+      background: #218838;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .sort-btn {
+      padding: 10px 20px;
+      background: #e9ecef;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .sort-btn.active {
+      background: #3498db;
+      color: white;
+    }
+    #buecherListe {
+      list-style: none;
+      padding: 0;
+    }
     .serien-gruppe {
       margin-bottom: 30px;
       border: 1px solid #e0e0e0;
@@ -36,143 +102,274 @@
       border-bottom: 1px dashed #ddd;
     }
     .buch-item {
+      background: white;
+      padding: 15px;
+      display: flex;
+      gap: 15px;
       border-bottom: 1px solid #eee;
     }
     .buch-item:last-child {
       border-bottom: none;
     }
+    .buch-cover {
+      width: 80px;
+      height: auto;
+      border-radius: 4px;
+    }
+    .buch-details {
+      flex: 1;
+    }
+    .buch-titel {
+      font-weight: bold;
+      margin: 0 0 5px 0;
+      color: #2c3e50;
+    }
+    .buch-autor {
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+    .buch-jahr {
+      color: #17a2b8;
+      font-size: 0.9em;
+    }
+    .message {
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+    }
   </style>
 </head>
 <body>
-  <!-- Dein bestehendes HTML bleibt gleich bis auf diesen neuen Button: -->
+  <h1>📚 Bücher-Serien Experte</h1>
+  
+  <div class="search-box">
+    <input type="text" id="suchfeld" placeholder="Autor eingeben (z.B. 'J.K. Rowling')" autocomplete="off">
+    <button id="suchbutton" type="button">Suchen</button>
+  </div>
+  
   <div class="controls">
     <button id="sortNewest" class="sort-btn active">Neueste</button>
     <button id="sortOldest" class="sort-btn">Älteste</button>
     <button id="showSeries" class="sort-btn">Serien anzeigen</button>
   </div>
+  
+  <ul id="buecherListe">
+    <li class="message">Suche nach einem Autor um Bücher und Serien zu entdecken</li>
+  </ul>
 
   <script>
-    // Neue Funktionen für Serienanalyse:
-    function detectSeries(books) {
-      const seriesMap = {};
+    document.addEventListener('DOMContentLoaded', () => {
+      // Elemente
+      const suchfeld = document.getElementById('suchfeld');
+      const suchbutton = document.getElementById('suchbutton');
+      const ergebnisListe = document.getElementById('buecherListe');
       
-      // Erkenne Serien durch Titelanalyse
-      books.forEach(book => {
-        // Erkenne gängige Serienmuster (Band, Teil, #, etc.)
-        const serieInfo = extractSeriesInfo(book.titel);
-        const serieKey = serieInfo ? serieInfo.name : 'Einzelbände';
-        const bandNr = serieInfo ? serieInfo.number : 0;
-        
-        if (!seriesMap[serieKey]) {
-          seriesMap[serieKey] = {
-            books: [],
-            guessedName: serieKey
-          };
+      // Globale Variablen
+      let buecher = [];
+      let currentMode = 'newest';
+
+      // Event Listener
+      suchbutton.addEventListener('click', sucheBuecher);
+      suchfeld.addEventListener('keypress', (e) => e.key === 'Enter' && sucheBuecher());
+      document.getElementById('sortNewest').addEventListener('click', () => {
+        currentMode = 'newest';
+        aktualisiereAnsicht();
+        updateActiveButton('sortNewest');
+      });
+      document.getElementById('sortOldest').addEventListener('click', () => {
+        currentMode = 'oldest';
+        aktualisiereAnsicht();
+        updateActiveButton('sortOldest');
+      });
+      document.getElementById('showSeries').addEventListener('click', () => {
+        currentMode = 'series';
+        aktualisiereAnsicht();
+        updateActiveButton('showSeries');
+      });
+
+      // Hauptfunktionen
+      async function sucheBuecher() {
+        const autor = suchfeld.value.trim();
+        if (autor.length < 2) {
+          showMessage('Bitte mindestens 2 Zeichen eingeben');
+          return;
         }
         
-        seriesMap[serieKey].books.push({
-          ...book,
-          bandNr: bandNr
-        });
-      });
-      
-      // Sortiere Bücher innerhalb der Serien nach Bandnummer
-      Object.values(seriesMap).forEach(serie => {
-        serie.books.sort((a, b) => a.bandNr - b.bandNr);
+        showMessage('Suche läuft...');
         
-        // Verbessere den Seriennamen durch den häufigsten Titelteil
-        if (serie.guessedName !== 'Einzelbände') {
-          const commonPrefix = findCommonPrefix(serie.books.map(b => b.titel));
-          if (commonPrefix.length > 10) { // Nur wenn sinnvoll
-            serie.guessedName = commonPrefix;
+        try {
+          const response = await fetch(`https://openlibrary.org/search.json?author=${encodeURIComponent(autor)}&limit=100`);
+          const daten = await response.json();
+          
+          buecher = daten.docs
+            .filter(b => b.title && b.first_publish_year)
+            .map(b => ({
+              titel: b.title,
+              autoren: b.author_name || ['Unbekannt'],
+              jahr: b.first_publish_year,
+              cover: b.cover_i ? `https://covers.openlibrary.org/b/id/${b.cover_i}-M.jpg` : null
+            }));
+          
+          if (buecher.length === 0) {
+            showMessage('Keine Bücher gefunden');
+            return;
           }
-        }
-      });
-      
-      return seriesMap;
-    }
-
-    function extractSeriesInfo(title) {
-      // Erkenne verschiedene Serien-Formate
-      const patterns = [
-        /^(.*?)\s*\(Band\s*(\d+)\)/i,      // "Titel (Band 1)"
-        /^(.*?)\s*[,-]\s*Band\s*(\d+)/i,    // "Titel - Band 1"
-        /^(.*?)\s*Bd\.\s*(\d+)/i,           // "Titel Bd. 1"
-        /^(.*?)\s*#(\d+)/i,                 // "Titel #1"
-        /^(.*?)\s*Teil\s*(\d+)/i,           // "Titel Teil 1"
-        /^(.*?)\s*Vol\.\s*(\d+)/i           // "Titel Vol. 1"
-      ];
-      
-      for (const pattern of patterns) {
-        const match = title.match(pattern);
-        if (match) {
-          return {
-            name: match[1].trim(),
-            number: parseInt(match[2])
-          };
+          
+          aktualisiereAnsicht();
+          
+        } catch (error) {
+          console.error('Fehler:', error);
+          showMessage('Fehler bei der Suche');
         }
       }
-      return null;
-    }
 
-    function findCommonPrefix(titles) {
-      if (titles.length === 0) return '';
-      let prefix = titles[0];
-      for (let i = 1; i < titles.length; i++) {
-        while (titles[i].indexOf(prefix) !== 0) {
-          prefix = prefix.substring(0, prefix.length - 1);
-          if (prefix === '') return '';
+      function aktualisiereAnsicht() {
+        if (currentMode === 'series') {
+          zeigeSerienAnsicht();
+        } else {
+          zeigeStandardAnsicht();
         }
       }
-      return prefix;
-    }
 
-    function displaySeries(seriesMap) {
-      ergebnisListe.innerHTML = '';
-      
-      Object.entries(seriesMap).forEach(([serieKey, serie]) => {
-        const serieElement = document.createElement('div');
-        serieElement.className = 'serien-gruppe';
+      function zeigeStandardAnsicht() {
+        const sortierteBuecher = [...buecher].sort((a, b) => 
+          currentMode === 'newest' ? b.jahr - a.jahr : a.jahr - b.jahr
+        );
         
-        let seriesHTML = `
-          <div class="serien-header">
-            <span class="serien-titel">${serie.guessedName}</span>
-            <span class="serien-info">${serie.books.length} Bücher in der Serie</span>
-          </div>
-          <div class="lese-reihenfolge">
-            💡 Lesereihenfolge: ${serie.books.map((b, idx) => 
-              `${idx+1}. ${b.titel.replace(serie.guessedName, '').trim()}`).join(' → ')}
-          </div>
-        `;
-        
-        serie.books.forEach(book => {
-          seriesHTML += `
-            <div class="buch-item">
-              ${book.cover ? `<img src="${book.cover}" class="buch-cover" alt="Cover">` : ''}
-              <div class="buch-details">
-                <div class="buch-titel">${book.titel}</div>
-                <div class="buch-autor">${book.autoren.join(', ')}</div>
-                <div class="buch-jahr">Band ${book.bandNr} • ${book.jahr}</div>
-              </div>
+        ergebnisListe.innerHTML = sortierteBuecher.map(buch => `
+          <li class="buch-item">
+            ${buch.cover ? `<img src="${buch.cover}" class="buch-cover" alt="Cover">` : ''}
+            <div class="buch-details">
+              <div class="buch-titel">${buch.titel}</div>
+              <div class="buch-autor">${buch.autoren.join(', ')}</div>
+              <div class="buch-jahr">${buch.jahr}</div>
             </div>
+          </li>
+        `).join('');
+      }
+
+      function zeigeSerienAnsicht() {
+        const serienMap = detectSeries(buecher);
+        
+        if (Object.keys(serienMap).length === 0) {
+          ergebnisListe.innerHTML = '<li class="message">Keine Serien gefunden</li>';
+          return;
+        }
+        
+        let html = '';
+        
+        Object.entries(serienMap).forEach(([serieKey, serie]) => {
+          html += `
+            <li class="serien-gruppe">
+              <div class="serien-header">
+                <span class="serien-titel">${serie.name}</span>
+                <span class="serien-info">${serie.books.length} Bücher</span>
+              </div>
+              <div class="lese-reihenfolge">
+                💡 Lesereihenfolge: ${serie.books.map((b, i) => `${i+1}. ${b.titel.replace(serie.name, '').trim()}`).join(' → ')}
+              </div>
+              ${serie.books.map(buch => `
+                <div class="buch-item">
+                  ${buch.cover ? `<img src="${buch.cover}" class="buch-cover" alt="Cover">` : ''}
+                  <div class="buch-details">
+                    <div class="buch-titel">${buch.titel}</div>
+                    <div class="buch-autor">${buch.autoren.join(', ')}</div>
+                    <div class="buch-jahr">${buch.jahr}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </li>
           `;
         });
         
-        serieElement.innerHTML = seriesHTML;
-        ergebnisListe.appendChild(serieElement);
-      });
-    }
+        ergebnisListe.innerHTML = html;
+      }
 
-    // Event-Listener für den Serien-Button
-    document.getElementById('showSeries').addEventListener('click', () => {
-      if (buecher.length === 0) return;
-      
-      const seriesMap = detectSeries(buecher);
-      displaySeries(seriesMap);
-      
-      // Button-Zustand aktualisieren
-      document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('showSeries').classList.add('active');
+      function detectSeries(books) {
+        const seriesMap = {};
+        
+        books.forEach(book => {
+          const serieInfo = extractSeriesInfo(book.titel);
+          const serieKey = serieInfo ? serieInfo.name : 'Einzelbände';
+          const bandNr = serieInfo ? serieInfo.number : 0;
+          
+          if (!seriesMap[serieKey]) {
+            seriesMap[serieKey] = {
+              name: serieKey,
+              books: []
+            };
+          }
+          
+          seriesMap[serieKey].books.push({
+            ...book,
+            bandNr: bandNr
+          });
+        });
+        
+        // Sortiere Bücher innerhalb der Serien
+        Object.values(seriesMap).forEach(serie => {
+          serie.books.sort((a, b) => a.bandNr - b.bandNr);
+          
+          // Verbessere Seriennamen
+          if (serie.name !== 'Einzelbände') {
+            const commonPrefix = findCommonPrefix(serie.books.map(b => b.titel));
+            if (commonPrefix.length > 10) {
+              serie.name = commonPrefix;
+            }
+          }
+        });
+        
+        // Entferne "Einzelbände" wenn leer
+        if (seriesMap['Einzelbände'] && seriesMap['Einzelbände'].books.length === 0) {
+          delete seriesMap['Einzelbände'];
+        }
+        
+        return seriesMap;
+      }
+
+      function extractSeriesInfo(title) {
+        const patterns = [
+          /^(.*?)\s*\(Band\s*(\d+)\)/i,
+          /^(.*?)\s*[,-]\s*Band\s*(\d+)/i,
+          /^(.*?)\s*Bd\.\s*(\d+)/i,
+          /^(.*?)\s*#(\d+)/i,
+          /^(.*?)\s*Teil\s*(\d+)/i,
+          /^(.*?)\s*Vol\.\s*(\d+)/i
+        ];
+        
+        for (const pattern of patterns) {
+          const match = title.match(pattern);
+          if (match) {
+            return {
+              name: match[1].trim(),
+              number: parseInt(match[2])
+            };
+          }
+        }
+        return null;
+      }
+
+      function findCommonPrefix(titles) {
+        if (titles.length === 0) return '';
+        let prefix = titles[0];
+        for (let i = 1; i < titles.length; i++) {
+          while (titles[i].indexOf(prefix) !== 0) {
+            prefix = prefix.substring(0, prefix.length - 1);
+            if (prefix === '') return '';
+          }
+        }
+        return prefix;
+      }
+
+      function updateActiveButton(activeId) {
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.id === activeId);
+        });
+      }
+
+      function showMessage(text) {
+        ergebnisListe.innerHTML = `<li class="message">${text}</li>`;
+      }
     });
   </script>
 </body>
